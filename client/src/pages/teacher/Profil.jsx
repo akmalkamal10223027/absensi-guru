@@ -155,8 +155,8 @@ const Profil = () => {
                         <button
                             onClick={() => setActiveTab('profile')}
                             className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'profile'
-                                    ? 'text-blue-600 border-b-2 border-blue-600'
-                                    : 'text-gray-500'
+                                ? 'text-blue-600 border-b-2 border-blue-600'
+                                : 'text-gray-500'
                                 }`}
                         >
                             Profil
@@ -164,8 +164,8 @@ const Profil = () => {
                         <button
                             onClick={() => setActiveTab('password')}
                             className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'password'
-                                    ? 'text-blue-600 border-b-2 border-blue-600'
-                                    : 'text-gray-500'
+                                ? 'text-blue-600 border-b-2 border-blue-600'
+                                : 'text-gray-500'
                                 }`}
                         >
                             Password
@@ -339,7 +339,7 @@ const Profil = () => {
                 </button>
 
                 <p className="text-center text-xs text-gray-400 pb-4">
-                    Versi 1.0.0 • SMA Negeri 1
+                    Versi 1.0.0 • SMA Al-Hidayah Puspahiang
                 </p>
             </div>
         </MobileLayout>
