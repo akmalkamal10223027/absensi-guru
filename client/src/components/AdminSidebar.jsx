@@ -35,7 +35,7 @@ const AdminSidebar = () => {
                     </div>
                     <div>
                         <h1 className="font-bold text-sm text-white tracking-tight">ABSENSI GURU</h1>
-                        <p className="text-xs text-slate-400">SMA NEGERI 1</p>
+                        <p className="text-xs text-slate-400">SMA AL-HIDAYAH</p>
                     </div>
                 </div>
             </div>

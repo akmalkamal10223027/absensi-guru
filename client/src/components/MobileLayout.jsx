@@ -52,7 +52,7 @@ const MobileLayout = ({ children, title, showBack = false }) => {
                             )}
                             <div>
                                 <h1 className="font-bold text-gray-900 text-sm">{title || 'Absensi Guru'}</h1>
-                                <p className="text-xs text-gray-500">SMA Negeri 1</p>
+                                <p className="text-xs text-gray-500">SMA Al-Hidayah Puspahiang</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">

@@ -13,10 +13,10 @@ const Pengaturan = () => {
 
     // Form states
     const [generalSettings, setGeneralSettings] = useState({
-        school_name: 'SMA Negeri 1',
-        school_address: 'Jl. Pendidikan No. 1, Jakarta',
-        school_phone: '021-1234567',
-        school_email: 'info@sman1.sch.id',
+        school_name: 'SMA Al-Hidayah Puspahiang',
+        school_address: 'Jl. Raya Puspahiang No. 1, Tasikmalaya',
+        school_phone: '0265-1234567',
+        school_email: 'info@smaalhidayahpuspahiang.sch.id',
         academic_year: '2026/2027',
         timezone: 'Asia/Jakarta'
     });

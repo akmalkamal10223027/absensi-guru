@@ -170,7 +170,7 @@ const RekapLaporan = () => {
             // Title Header Sekolah
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
-            doc.text('SMA NEGERI 1', 148, 15, { align: 'center' });
+            doc.text('SMA AL-HIDAYAH PUSPAHIANG', 148, 15, { align: 'center' });
             doc.setFontSize(12);
             doc.text('LAPORAN REKAPITULASI KEHADIRAN GURU', 148, 22, { align: 'center' });
 
