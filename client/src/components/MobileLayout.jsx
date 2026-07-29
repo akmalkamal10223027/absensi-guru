@@ -1,8 +1,9 @@
+import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard, LogIn, LogOut, History, User,
-    Bell, ChevronLeft
+    Bell, ChevronLeft, Download
 } from 'lucide-react';
 import logoImg from '../assets/logo.png';
 
@@ -10,6 +11,33 @@ const MobileLayout = ({ children, title, showBack = false }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+    const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+    useEffect(() => {
+        const handleBeforeInstallPrompt = (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setShowInstallBanner(true);
+        };
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        };
+    }, []);
+
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            setShowInstallBanner(false);
+        }
+        setDeferredPrompt(null);
+    };
 
     const navItems = [
         { path: '/teacher/dashboard', icon: LayoutDashboard, label: 'Beranda' },
@@ -60,6 +88,30 @@ const MobileLayout = ({ children, title, showBack = false }) => {
                             </div>
                         </div>
                     </div>
+
+                    {/* PWA Install Banner Prompt */}
+                    {showInstallBanner && (
+                        <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white px-4 py-2 flex items-center justify-between shadow-inner text-xs border-t border-blue-600">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <Download className="w-4 h-4 text-amber-300 shrink-0 animate-bounce" />
+                                <span className="font-semibold truncate">Pasang Aplikasi di HP</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                    onClick={handleInstallClick}
+                                    className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-3 py-1 rounded-lg text-xs transition-colors shadow"
+                                >
+                                    Instal
+                                </button>
+                                <button
+                                    onClick={() => setShowInstallBanner(false)}
+                                    className="text-white/70 hover:text-white p-1 text-sm font-bold"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </header>
             )}
 
