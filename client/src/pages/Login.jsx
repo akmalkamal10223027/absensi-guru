@@ -146,8 +146,8 @@ const Login = () => {
 
                     {/* Mobile Header Branding */}
                     <div className="lg:hidden flex items-center gap-3 mb-6 pb-6 border-b border-slate-800">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-bold shrink-0">
-                            <School className="w-6 h-6" />
+                        <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 p-1 flex items-center justify-center shrink-0 shadow-md">
+                            <img src={logoImg} alt="SMA Negeri 1 Logo" className="w-full h-full object-contain" />
                         </div>
                         <div>
                             <h2 className="text-base font-bold text-white">SMA NEGERI 1</h2>
