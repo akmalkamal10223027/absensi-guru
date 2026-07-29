@@ -57,9 +57,10 @@ export const login = async (req, res) => {
         const roleName = String(rawRole).toLowerCase();
 
         // Generate JWT token
+        const jwtSecret = process.env.JWT_SECRET || 'ganti-dengan-random-string-yang-panjang-dan-aman';
         const token = jwt.sign(
             { userId: user.id, role: roleName },
-            process.env.JWT_SECRET,
+            jwtSecret,
             { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
         );
 
@@ -77,7 +78,7 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+        res.status(500).json({ error: String(error?.message || error || 'Terjadi kesalahan pada server') });
     }
 };
 

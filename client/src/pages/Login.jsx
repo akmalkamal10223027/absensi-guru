@@ -67,7 +67,11 @@ const Login = () => {
             }
         } catch (error) {
             console.error('Login error:', error);
-            toast.error(error.response?.data?.error || 'Login gagal, periksa email/username dan kata sandi.');
+            const rawErr = error.response?.data?.error;
+            const errorMsg = typeof rawErr === 'string'
+                ? rawErr
+                : (rawErr?.message || 'Login gagal, periksa email/username dan kata sandi.');
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }
