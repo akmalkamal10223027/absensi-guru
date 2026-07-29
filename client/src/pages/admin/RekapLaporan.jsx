@@ -17,6 +17,7 @@ import toast from 'react-hot-toast';
 // Import jsPDF dan autoTable
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import kopImg from '../../assets/kop-surat.png';
 
 const RekapLaporan = () => {
     const [loading, setLoading] = useState(true);
@@ -167,20 +168,27 @@ const RekapLaporan = () => {
         try {
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-            // Title Header Sekolah
-            doc.setFontSize(16);
+            // Add Kop Surat Image Header
+            try {
+                doc.addImage(kopImg, 'PNG', 14, 6, 269, 34);
+            } catch (imgErr) {
+                console.error('Error adding kop-surat image to PDF:', imgErr);
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.text('SMA AL-HIDAYAH PUSPAHIANG', 148, 15, { align: 'center' });
+            }
+
+            doc.setFontSize(11);
             doc.setFont('helvetica', 'bold');
-            doc.text('SMA AL-HIDAYAH PUSPAHIANG', 148, 15, { align: 'center' });
-            doc.setFontSize(12);
-            doc.text('LAPORAN REKAPITULASI KEHADIRAN GURU', 148, 22, { align: 'center' });
+            doc.text('LAPORAN REKAPITULASI KEHADIRAN GURU', 148.5, 45, { align: 'center' });
 
             doc.setFontSize(9);
             doc.setFont('helvetica', 'normal');
             const periodStr = `Periode: ${format(parseISO(startDate), 'd MMMM yyyy', { locale: localeId })} - ${format(parseISO(endDate), 'd MMMM yyyy', { locale: localeId })}`;
-            doc.text(periodStr, 148, 27, { align: 'center' });
+            doc.text(periodStr, 148.5, 50, { align: 'center' });
 
-            doc.setLineWidth(0.5);
-            doc.line(14, 31, 283, 31);
+            doc.setLineWidth(0.4);
+            doc.line(14, 53, 283, 53);
 
             // Table Data
             const tableData = filteredRekap.map((r, index) => [
@@ -197,7 +205,7 @@ const RekapLaporan = () => {
             ]);
 
             autoTable(doc, {
-                startY: 35,
+                startY: 56,
                 head: [['No', 'Nama Guru', 'NIP', 'Hadir', 'Terlambat', 'Tidak Hadir', 'Izin', 'Sakit', 'Alpha', '% Hadir']],
                 body: tableData,
                 theme: 'grid',
@@ -231,7 +239,7 @@ const RekapLaporan = () => {
             if (sigY < 175) {
                 doc.setFont('helvetica', 'normal');
                 doc.text('Mengetahui,', 220, sigY);
-                doc.text('Kepala Sekolah SMA Negeri 1', 220, sigY + 5);
+                doc.text('Kepala Sekolah SMA Al-Hidayah Puspahiang', 220, sigY + 5);
                 doc.text('( ................................................ )', 220, sigY + 25);
             }
 
@@ -264,9 +272,9 @@ const RekapLaporan = () => {
             <AdminSidebar />
             <main className="flex-1 ml-64 p-8 print:ml-0 print:p-0 print:w-full">
                 {/* Printable School Header (Only visible on window.print()) */}
-                <div className="hidden print:block mb-6 text-center border-b-2 border-black pb-4">
-                    <h1 className="text-xl font-bold uppercase tracking-wider text-black">SMA NEGERI 1</h1>
-                    <h2 className="text-base font-semibold text-black">LAPORAN REKAPITULASI KEHADIRAN GURU</h2>
+                <div className="hidden print:block mb-4 text-center">
+                    <img src={kopImg} alt="Kop Surat SMA Al-Hidayah Puspahiang" className="w-full h-auto mb-3" />
+                    <h2 className="text-base font-bold text-black uppercase tracking-wider">LAPORAN REKAPITULASI KEHADIRAN GURU</h2>
                     <p className="text-xs text-gray-700 mt-1">
                         Periode: {format(parseISO(startDate), 'd MMMM yyyy', { locale: localeId })} — {format(parseISO(endDate), 'd MMMM yyyy', { locale: localeId })}
                     </p>
@@ -511,13 +519,13 @@ const RekapLaporan = () => {
                                                     <div className="w-16 bg-slate-800 rounded-full h-2 overflow-hidden print:hidden">
                                                         <div
                                                             className={`h-2 rounded-full ${record.persentaseKehadiran >= 80 ? 'bg-emerald-500' :
-                                                                    record.persentaseKehadiran >= 60 ? 'bg-amber-500' : 'bg-rose-500'
+                                                                record.persentaseKehadiran >= 60 ? 'bg-amber-500' : 'bg-rose-500'
                                                                 }`}
                                                             style={{ width: `${record.persentaseKehadiran}%` }}
                                                         ></div>
                                                     </div>
                                                     <span className={`font-bold text-xs ${record.persentaseKehadiran >= 80 ? 'text-emerald-400' :
-                                                            record.persentaseKehadiran >= 60 ? 'text-amber-400' : 'text-rose-400'
+                                                        record.persentaseKehadiran >= 60 ? 'text-amber-400' : 'text-rose-400'
                                                         } print:text-black`}>
                                                         {record.persentaseKehadiran}%
                                                     </span>
@@ -561,11 +569,11 @@ const RekapLaporan = () => {
                 <div className="hidden print:flex justify-between items-end mt-12 text-xs text-black">
                     <div>
                         <p>Dicetak pada: {format(new Date(), 'd MMMM yyyy HH:mm', { locale: localeId })} WIB</p>
-                        <p>Sistem Informasi Absensi Guru — SMA Negeri 1</p>
+                        <p>Sistem Informasi Absensi Guru — SMA Al-Hidayah Puspahiang</p>
                     </div>
                     <div className="text-center w-64">
                         <p>Mengetahui,</p>
-                        <p className="font-semibold mb-16">Kepala Sekolah SMA Negeri 1</p>
+                        <p className="font-semibold mb-16">Kepala Sekolah SMA Al-Hidayah Puspahiang</p>
                         <p className="font-bold underline">( ................................................ )</p>
                     </div>
                 </div>
