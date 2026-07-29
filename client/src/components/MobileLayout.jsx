@@ -2,8 +2,9 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard, LogIn, LogOut, History, User,
-    School, Bell, ChevronLeft
+    Bell, ChevronLeft
 } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 const MobileLayout = ({ children, title, showBack = false }) => {
     const { user, logout } = useAuth();
@@ -45,8 +46,8 @@ const MobileLayout = ({ children, title, showBack = false }) => {
                                     <ChevronLeft className="w-5 h-5 text-gray-700" />
                                 </button>
                             ) : (
-                                <div className="w-9 h-9 bg-yellow-500 rounded-lg flex items-center justify-center">
-                                    <School className="w-5 h-5 text-slate-900" />
+                                <div className="w-10 h-10 rounded-xl bg-slate-900 p-1 flex items-center justify-center shadow-sm shrink-0">
+                                    <img src={logoImg} alt="SMA Negeri 1 Logo" className="w-full h-full object-contain" />
                                 </div>
                             )}
                             <div>

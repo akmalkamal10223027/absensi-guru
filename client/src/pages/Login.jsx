@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-    Eye, EyeOff, School, User, Lock, ShieldCheck,
+    Eye, EyeOff, User, Lock, ShieldCheck,
     GraduationCap, Sparkles, CheckCircle2, ArrowRight, Loader2, KeyRound
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logoImg from '../assets/logo.png';
 
 const Login = () => {
     const [activeTab, setActiveTab] = useState('admin'); // 'admin' | 'guru'
@@ -93,8 +94,8 @@ const Login = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-400 to-amber-500 flex items-center justify-center text-slate-950 font-bold shrink-0 shadow-lg shadow-amber-500/20">
-                            <School className="w-7 h-7" />
+                        <div className="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 p-2 flex items-center justify-center shrink-0 shadow-xl">
+                            <img src={logoImg} alt="SMA Negeri 1 Logo" className="w-full h-full object-contain" />
                         </div>
                         <div>
                             <h1 className="text-xl font-extrabold text-white tracking-tight leading-none">SMA NEGERI 1</h1>

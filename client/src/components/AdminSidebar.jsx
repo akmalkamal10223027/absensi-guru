@@ -2,8 +2,9 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard, Users, ClipboardCheck, FileText,
-    Clock, MapPin, Settings, User, LogOut, School
+    Clock, MapPin, Settings, User, LogOut
 } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 const menuItems = [
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -26,14 +27,14 @@ const AdminSidebar = () => {
     };
 
     return (
-        <aside className="w-64 bg-slate-900 text-white flex flex-col min-h-screen fixed left-0 top-0">
-            <div className="p-6 border-b border-slate-700">
+        <aside className="w-64 bg-slate-900 text-white flex flex-col min-h-screen fixed left-0 top-0 border-r border-slate-800">
+            <div className="p-6 border-b border-slate-800">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
-                        <School className="w-6 h-6 text-slate-900" />
+                    <div className="w-10 h-10 bg-slate-950 border border-slate-800 rounded-xl p-1 flex items-center justify-center shrink-0 shadow-md">
+                        <img src={logoImg} alt="Logo" className="w-full h-full object-contain" />
                     </div>
                     <div>
-                        <h1 className="font-bold text-sm">ABSENSI GURU</h1>
+                        <h1 className="font-bold text-sm text-white tracking-tight">ABSENSI GURU</h1>
                         <p className="text-xs text-slate-400">SMA NEGERI 1</p>
                     </div>
                 </div>
