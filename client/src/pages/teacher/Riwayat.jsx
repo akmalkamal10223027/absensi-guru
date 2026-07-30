@@ -4,8 +4,7 @@ import { attendanceAPI } from '../../utils/api';
 import {
     Calendar, Filter, CheckCircle, AlertCircle, XCircle,
     Clock, ChevronRight, Loader, ChevronLeft, MapPin,
-    Camera, FileText, Info, Award, UserCheck, Eye, X,
-    TrendingUp, ShieldCheck, Sparkles
+    FileText, Award, TrendingUp
 } from 'lucide-react';
 import { format, addMonths, subMonths, parseISO } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
@@ -16,7 +15,6 @@ const Riwayat = () => {
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [filterStatus, setFilterStatus] = useState('all');
-    const [selectedDetail, setSelectedDetail] = useState(null);
 
     const filterMonth = format(selectedDate, 'yyyy-MM');
 
@@ -242,8 +240,7 @@ const Riwayat = () => {
                             return (
                                 <div
                                     key={record.id}
-                                    onClick={() => setSelectedDetail(record)}
-                                    className={`bg-white rounded-2xl p-4 shadow-sm border border-slate-200/70 hover:shadow-md transition-all cursor-pointer relative overflow-hidden border-l-4 ${theme.cardBorder}`}
+                                    className={`bg-white rounded-2xl p-4 shadow-sm border border-slate-200/70 relative overflow-hidden border-l-4 ${theme.cardBorder}`}
                                 >
                                     <div className="flex items-start justify-between gap-3">
                                         {/* Date Box & Day Name */}
@@ -300,16 +297,10 @@ const Riwayat = () => {
                                         </div>
                                     </div>
 
-                                    {/* Location & Detail trigger footer */}
-                                    <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500">
-                                        <div className="flex items-center gap-1 truncate text-slate-400">
-                                            <MapPin className="w-3 h-3 text-blue-500 shrink-0" />
-                                            <span className="truncate">SMA Al-Hidayah Puspahiang</span>
-                                        </div>
-                                        <div className="flex items-center gap-1 font-semibold text-blue-600 shrink-0">
-                                            <span>Detail</span>
-                                            <ChevronRight className="w-3.5 h-3.5" />
-                                        </div>
+                                    {/* Location Footer */}
+                                    <div className="mt-2.5 flex items-center gap-1 text-[11px] text-slate-400 truncate">
+                                        <MapPin className="w-3 h-3 text-blue-500 shrink-0" />
+                                        <span className="truncate">SMA Al-Hidayah Puspahiang</span>
                                     </div>
                                 </div>
                             );
@@ -335,140 +326,6 @@ const Riwayat = () => {
                     )}
                 </div>
             </div>
-
-            {/* Modal Detail Presensi */}
-            {selectedDetail && (
-                <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl max-h-[90vh] overflow-y-auto border border-slate-200 shadow-2xl">
-                        {/* Modal Header */}
-                        <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur z-10">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                                    <Info className="w-4 h-4" />
-                                </div>
-                                <h3 className="font-bold text-slate-900 text-sm">Detail Presensi</h3>
-                            </div>
-                            <button
-                                onClick={() => setSelectedDetail(null)}
-                                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Modal Content */}
-                        <div className="p-5 space-y-4">
-                            {/* Date & Status Banner */}
-                            <div className="bg-slate-900 text-white rounded-2xl p-4 flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs text-slate-400 font-medium">Tanggal Presensi</p>
-                                    <p className="font-bold text-sm text-white mt-0.5">
-                                        {selectedDetail.date
-                                            ? format(parseISO(selectedDetail.date), 'EEEE, d MMMM yyyy', { locale: localeId })
-                                            : '-'}
-                                    </p>
-                                </div>
-                                {(() => {
-                                    const theme = getStatusTheme(selectedDetail.status);
-                                    const StatusIcon = theme.icon;
-                                    return (
-                                        <span className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme.bg}`}>
-                                            <StatusIcon className="w-4 h-4" />
-                                            {theme.label}
-                                        </span>
-                                    );
-                                })()}
-                            </div>
-
-                            {/* Photo Proof Section (If Available) */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <p className="text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
-                                        <Camera className="w-3.5 h-3.5 text-emerald-600" />
-                                        Foto Masuk
-                                    </p>
-                                    {selectedDetail.check_in_photo ? (
-                                        <div className="w-full h-36 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 relative group">
-                                            <img
-                                                src={selectedDetail.check_in_photo}
-                                                alt="Foto Absen Masuk"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="w-full h-36 rounded-2xl bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 p-3 text-center">
-                                            <Camera className="w-6 h-6 mb-1 opacity-40" />
-                                            <span className="text-[11px]">Foto tidak ada</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <p className="text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
-                                        <Camera className="w-3.5 h-3.5 text-rose-600" />
-                                        Foto Pulang
-                                    </p>
-                                    {selectedDetail.check_out_photo ? (
-                                        <div className="w-full h-36 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 relative group">
-                                            <img
-                                                src={selectedDetail.check_out_photo}
-                                                alt="Foto Absen Pulang"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="w-full h-36 rounded-2xl bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 p-3 text-center">
-                                            <Camera className="w-6 h-6 mb-1 opacity-40" />
-                                            <span className="text-[11px]">Foto tidak ada</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Details Grid */}
-                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-3 text-xs">
-                                <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
-                                    <span className="text-slate-500 font-medium">Jam Masuk</span>
-                                    <span className="font-bold text-slate-900 font-mono">
-                                        {selectedDetail.check_in_time ? format(parseISO(selectedDetail.check_in_time), 'HH:mm:ss WIB') : '-'}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
-                                    <span className="text-slate-500 font-medium">Jam Pulang</span>
-                                    <span className="font-bold text-slate-900 font-mono">
-                                        {selectedDetail.check_out_time ? format(parseISO(selectedDetail.check_out_time), 'HH:mm:ss WIB') : '-'}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-slate-500 font-medium">Lokasi Sekolah</span>
-                                    <span className="font-semibold text-slate-800">SMA Al-Hidayah Puspahiang</span>
-                                </div>
-                            </div>
-
-                            {/* Notes / Alasan Terlambat if exists */}
-                            {(selectedDetail.notes || selectedDetail.late_reason) && (
-                                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900">
-                                    <p className="font-bold mb-1 flex items-center gap-1.5">
-                                        <FileText className="w-3.5 h-3.5 text-amber-600" />
-                                        Catatan / Alasan
-                                    </p>
-                                    <p className="text-amber-800">
-                                        {selectedDetail.notes || selectedDetail.late_reason}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Close Button */}
-                            <button
-                                onClick={() => setSelectedDetail(null)}
-                                className="w-full py-3 bg-slate-900 text-white text-xs font-bold rounded-2xl hover:bg-slate-800 transition-colors cursor-pointer"
-                            >
-                                Tutup Detail
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </MobileLayout>
     );
 };
