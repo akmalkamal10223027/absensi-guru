@@ -60,7 +60,7 @@ const Akun = () => {
             }
             toast.success('Profil berhasil diperbarui');
         } catch (error) {
-            toast.error(error.response?.data?.error || 'Profil berhasil diperbarui');
+            toast.error(error.response?.data?.error || 'Gagal memperbarui profil');
         } finally {
             setSaving(false);
         }
