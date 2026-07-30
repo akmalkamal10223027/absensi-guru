@@ -6,8 +6,8 @@ const getWibInfo = () => {
     const nowWib = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
     const today = format(nowWib, 'yyyy-MM-dd');
     const dayOfWeek = nowWib.getDay(); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
-    const currentMinutes = nowWib.getHours() * 60 + nowWib.getMinutes();
-    return { nowWib, today, dayOfWeek, currentMinutes };
+    const currentSeconds = nowWib.getHours() * 3600 + nowWib.getMinutes() * 60 + nowWib.getSeconds();
+    return { nowWib, today, dayOfWeek, currentSeconds };
 };
 
 // Haversine formula untuk hitung jarak
@@ -29,7 +29,7 @@ export const checkIn = async (req, res) => {
     try {
         const { latitude, longitude, notes } = req.body;
         const userId = req.user.id;
-        const { today, dayOfWeek, currentMinutes } = getWibInfo();
+        const { today, dayOfWeek, currentSeconds } = getWibInfo();
 
         // Cek apakah sudah check-in hari ini
         const { data: existing } = await supabase
@@ -92,11 +92,14 @@ export const checkIn = async (req, res) => {
         const startTimeStr = schedule?.start_time || '07:00:00';
         const lateThresholdMinutes = schedule?.late_threshold_minutes ?? 15;
 
-        const [startHour, startMinute] = startTimeStr.split(':');
-        const lateThreshold = (parseInt(startHour) * 60) + parseInt(startMinute) + parseInt(lateThresholdMinutes);
+        const [startHour, startMinute, startSecond] = startTimeStr.split(':');
+        const lateThresholdSeconds = (parseInt(startHour) * 3600)
+            + (parseInt(startMinute) * 60)
+            + (parseInt(startSecond || 0))
+            + (parseInt(lateThresholdMinutes) * 60);
 
         let status = 'hadir';
-        if (currentMinutes > lateThreshold) {
+        if (currentSeconds > lateThresholdSeconds) {
             status = 'terlambat';
         }
 
