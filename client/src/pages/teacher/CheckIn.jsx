@@ -15,6 +15,7 @@ const CheckIn = () => {
     const [submitting, setSubmitting] = useState(false);
     const [step, setStep] = useState('camera'); // camera, preview, success
     const [cameraError, setCameraError] = useState(false);
+    const [checkInResult, setCheckInResult] = useState(null);
 
     useEffect(() => {
         startCamera();
@@ -106,8 +107,16 @@ const CheckIn = () => {
             formData.append('latitude', location.latitude);
             formData.append('longitude', location.longitude);
 
-            await attendanceAPI.checkIn(formData);
-            toast.success('Absen masuk berhasil!');
+            const res = await attendanceAPI.checkIn(formData);
+            const resData = res.data;
+            setCheckInResult(resData);
+
+            const status = resData?.status || resData?.attendance?.status;
+            if (status === 'terlambat') {
+                toast.error('Absen masuk tercatat: Terlambat');
+            } else {
+                toast.success('Absen masuk berhasil: Tepat Waktu');
+            }
             setStep('success');
         } catch (error) {
             toast.error(error.response?.data?.error || 'Gagal melakukan absen masuk');
@@ -118,40 +127,47 @@ const CheckIn = () => {
 
     // Success Screen
     if (step === 'success') {
+        const currentStatus = checkInResult?.status || checkInResult?.attendance?.status || 'hadir';
+        const isTerlambat = currentStatus === 'terlambat';
+
         return (
-            <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-600 flex flex-col items-center justify-center p-6 text-white">
+            <div className={`min-h-screen bg-gradient-to-br ${isTerlambat ? 'from-amber-500 to-amber-600' : 'from-emerald-500 to-emerald-600'} flex flex-col items-center justify-center p-6 text-white`}>
                 <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 animate-bounce">
-                    <CheckCircle className="w-16 h-16 text-green-500" />
+                    <CheckCircle className={`w-16 h-16 ${isTerlambat ? 'text-amber-500' : 'text-emerald-500'}`} />
                 </div>
-                <h1 className="text-3xl font-bold mb-2">Berhasil!</h1>
-                <p className="text-green-100 text-center mb-8">
-                    Absen masuk Anda telah tercatat
+                <h1 className="text-3xl font-bold mb-2">
+                    {isTerlambat ? 'Absen Terlambat!' : 'Berhasil!'}
+                </h1>
+                <p className={`${isTerlambat ? 'text-amber-100' : 'text-emerald-100'} text-center mb-8`}>
+                    {isTerlambat ? 'Absen masuk Anda telah tercatat (Terlambat)' : 'Absen masuk Anda telah tercatat (Tepat Waktu)'}
                 </p>
 
                 <div className="bg-white/20 backdrop-blur rounded-2xl p-6 w-full max-w-sm mb-8">
                     <div className="space-y-3">
                         <div className="flex justify-between">
-                            <span className="text-green-100 text-sm">Tanggal</span>
+                            <span className={`${isTerlambat ? 'text-amber-100' : 'text-emerald-100'} text-sm`}>Tanggal</span>
                             <span className="font-semibold">
                                 {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
                             </span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-green-100 text-sm">Jam</span>
+                            <span className={`${isTerlambat ? 'text-amber-100' : 'text-emerald-100'} text-sm`}>Jam</span>
                             <span className="font-semibold">
                                 {new Date().toLocaleTimeString('id-ID')}
                             </span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-green-100 text-sm">Status</span>
-                            <span className="font-semibold bg-white/30 px-3 py-1 rounded-full text-xs">Hadir</span>
+                            <span className={`${isTerlambat ? 'text-amber-100' : 'text-emerald-100'} text-sm`}>Status</span>
+                            <span className="font-semibold bg-white/30 px-3 py-1 rounded-full text-xs">
+                                {isTerlambat ? 'Terlambat' : 'Hadir Tepat Waktu'}
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 <button
                     onClick={() => navigate('/teacher/dashboard')}
-                    className="w-full max-w-sm bg-white text-green-600 font-bold py-4 rounded-2xl hover:bg-green-50 transition-colors"
+                    className={`w-full max-w-sm bg-white ${isTerlambat ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'} font-bold py-4 rounded-2xl transition-colors`}
                 >
                     Kembali ke Dashboard
                 </button>
