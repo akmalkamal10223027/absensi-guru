@@ -3,15 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     Eye, EyeOff, User, Lock, ShieldCheck,
-    GraduationCap, Sparkles, CheckCircle2, ArrowRight, Loader2, KeyRound
+    Sparkles, CheckCircle2, ArrowRight, Loader2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import logoImg from '../assets/logo.png';
 
 const Login = () => {
-    const [activeTab, setActiveTab] = useState('admin'); // 'admin' | 'guru'
-    const [identifier, setIdentifier] = useState('admin');
-    const [password, setPassword] = useState('admin123');
+    const [identifier, setIdentifier] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const { user, login, loading: authLoading } = useAuth();
@@ -28,29 +27,6 @@ const Login = () => {
             }
         }
     }, [user, authLoading, navigate]);
-
-    const handleTabSwitch = (tab) => {
-        setActiveTab(tab);
-        if (tab === 'admin') {
-            setIdentifier('admin');
-            setPassword('admin123');
-        } else {
-            setIdentifier('198505152010012001');
-            setPassword('admin123');
-        }
-    };
-
-    const handleQuickFill = (roleType) => {
-        if (roleType === 'admin') {
-            setActiveTab('admin');
-            setIdentifier('admin');
-            setPassword('admin123');
-        } else {
-            setActiveTab('guru');
-            setIdentifier('198505152010012001');
-            setPassword('admin123');
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -158,57 +134,7 @@ const Login = () => {
                     {/* Form Title */}
                     <div className="mb-6">
                         <h2 className="text-2xl font-bold text-white">Selamat Datang</h2>
-                        <p className="text-xs text-slate-400 mt-1">Silakan pilih peran dan masuk ke akun Anda</p>
-                    </div>
-
-                    {/* Role Tabs */}
-                    <div className="flex gap-2 p-1.5 bg-slate-900 border border-slate-800 rounded-2xl mb-6">
-                        <button
-                            type="button"
-                            onClick={() => handleTabSwitch('admin')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeTab === 'admin'
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                                    : 'text-slate-400 hover:text-slate-200'
-                                }`}
-                        >
-                            <ShieldCheck className="w-4 h-4 shrink-0" />
-                            <span>Administrator</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleTabSwitch('guru')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeTab === 'guru'
-                                    ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/30'
-                                    : 'text-slate-400 hover:text-slate-200'
-                                }`}
-                        >
-                            <GraduationCap className="w-4 h-4 shrink-0" />
-                            <span>Guru / Staf</span>
-                        </button>
-                    </div>
-
-                    {/* Quick Fill Demo */}
-                    <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-2xl mb-6 flex items-center justify-between text-xs">
-                        <span className="text-slate-400 flex items-center gap-1.5 font-medium">
-                            <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-                            Isi Cepat:
-                        </span>
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={() => handleQuickFill('admin')}
-                                className="px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg font-semibold transition-all cursor-pointer"
-                            >
-                                Akun Admin
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleQuickFill('guru')}
-                                className="px-3 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-lg font-semibold transition-all cursor-pointer"
-                            >
-                                Akun Guru
-                            </button>
-                        </div>
+                        <p className="text-xs text-slate-400 mt-1">Silakan masuk ke akun Anda</p>
                     </div>
 
                     {/* Login Form */}
@@ -216,7 +142,7 @@ const Login = () => {
                         {/* Identifier Input */}
                         <div className="space-y-1.5">
                             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                                {activeTab === 'admin' ? 'Email / Username Admin' : 'NIP / Username / Email Guru'}
+                                Username / Email / NIP
                             </label>
                             <div className="flex items-center gap-3 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
                                 <User className="w-5 h-5 text-slate-400 shrink-0" />
@@ -224,7 +150,7 @@ const Login = () => {
                                     type="text"
                                     value={identifier}
                                     onChange={(e) => setIdentifier(e.target.value)}
-                                    placeholder={activeTab === 'admin' ? 'admin' : '198505152010012001'}
+                                    placeholder="Masukkan Username, NIP, atau Email"
                                     className="w-full bg-transparent border-none outline-none text-sm text-white placeholder-slate-500 font-medium"
                                     style={{ color: '#ffffff' }}
                                     required
@@ -262,10 +188,7 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full py-3.5 px-4 text-white font-semibold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-4 cursor-pointer ${activeTab === 'admin'
-                                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-blue-600/25'
-                                    : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 shadow-amber-600/25'
-                                }`}
+                            className="w-full py-3.5 px-4 text-white font-semibold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-4 cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-blue-600/25"
                         >
                             {loading ? (
                                 <>
@@ -274,7 +197,7 @@ const Login = () => {
                                 </>
                             ) : (
                                 <>
-                                    <span>Masuk ke {activeTab === 'admin' ? 'Dashboard Admin' : 'Portal Presensi Guru'}</span>
+                                    <span>Login</span>
                                     <ArrowRight className="w-4 h-4 shrink-0" />
                                 </>
                             )}
