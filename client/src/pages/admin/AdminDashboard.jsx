@@ -302,7 +302,7 @@ const AdminDashboard = () => {
                                             <td className="py-4 px-6">
                                                 {getStatusBadge(record.status)}
                                             </td>
-                                            <td className="py-4 px-6 text-slate-400">SMA Negeri 1</td>
+                                            <td className="py-4 px-6 text-slate-400">SMA Al-Hidayah Puspahiang</td>
                                         </tr>
                                     ))
                                 ) : (

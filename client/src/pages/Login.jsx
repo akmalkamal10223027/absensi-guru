@@ -207,7 +207,7 @@ const Login = () => {
                     {/* Footer Note */}
                     <div className="mt-8 pt-4 border-t border-slate-800 text-center">
                         <p className="text-xs text-slate-500">
-                            Sistem Presensi Kehadiran Guru SMA Negeri 1
+                            Sistem Presensi Kehadiran Guru SMA Al-Hidayah Puspahiang
                         </p>
                     </div>
                 </div>

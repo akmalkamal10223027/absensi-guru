@@ -386,7 +386,7 @@ const LokasiSekolah = () => {
                                         name="name"
                                         value={formData.name}
                                         onChange={handleInputChange}
-                                        placeholder="SMA Negeri 1"
+                                        placeholder="SMA Al-Hidayah Puspahiang"
                                         className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500"
                                     />
                                 </div>

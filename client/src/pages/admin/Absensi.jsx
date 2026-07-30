@@ -248,7 +248,7 @@ const Absensi = () => {
                                             <td className="py-4 px-6 text-slate-400">
                                                 <div className="flex items-center gap-1.5">
                                                     <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                                                    <span>SMA Negeri 1</span>
+                                                    <span>SMA Al-Hidayah Puspahiang</span>
                                                 </div>
                                             </td>
                                             <td className="py-4 px-6">

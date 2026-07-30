@@ -5,7 +5,7 @@ export const getAllUsers = async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('users')
-            .select('id, email, username, full_name, nip, photo_url, is_active, created_at, roles(name)')
+            .select('id, email, username, full_name, nip, photo_url, is_active, created_at, password_hash, roles(name)')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -55,18 +55,24 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
     try {
-        const { full_name, email, username, nip, is_active } = req.body;
+        const { full_name, email, username, nip, is_active, password } = req.body;
+
+        const updateData = {
+            full_name: full_name || undefined,
+            email: email || undefined,
+            username: username || undefined,
+            nip: nip || undefined,
+            is_active: is_active !== undefined ? is_active : undefined,
+            updated_at: new Date().toISOString()
+        };
+
+        if (password && password.trim() !== '') {
+            updateData.password_hash = await bcrypt.hash(password, 10);
+        }
 
         const { data, error } = await supabase
             .from('users')
-            .update({
-                full_name: full_name || undefined,
-                email: email || undefined,
-                username: username || undefined,
-                nip: nip || undefined,
-                is_active: is_active !== undefined ? is_active : undefined,
-                updated_at: new Date().toISOString()
-            })
+            .update(updateData)
             .eq('id', req.params.id)
             .select()
             .single();
@@ -74,6 +80,7 @@ export const updateUser = async (req, res) => {
         if (error) throw error;
         res.json(data);
     } catch (error) {
+        console.error('Update user error:', error);
         res.status(500).json({ error: 'Terjadi kesalahan saat memperbarui user' });
     }
 };

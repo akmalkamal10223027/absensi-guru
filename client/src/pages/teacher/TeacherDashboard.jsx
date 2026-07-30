@@ -89,7 +89,7 @@ const TeacherDashboard = () => {
                         </div>
                         {/* Official School Logo */}
                         <div className="w-13 h-13 rounded-2xl bg-white/10 p-1.5 backdrop-blur border border-white/20 flex items-center justify-center shrink-0 shadow-lg">
-                            <img src={logoImg} alt="Logo SMA Negeri 1" className="w-full h-full object-contain" />
+                            <img src={logoImg} alt="Logo SMA Al-Hidayah Puspahiang" className="w-full h-full object-contain" />
                         </div>
                     </div>
 

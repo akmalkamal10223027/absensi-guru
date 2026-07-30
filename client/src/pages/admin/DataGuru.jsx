@@ -3,7 +3,8 @@ import AdminSidebar from '../../components/AdminSidebar';
 import { userAPI } from '../../utils/api';
 import {
     Users, Plus, Search, Edit2, Trash2, X, CheckCircle,
-    AlertCircle, Loader, Filter, ShieldCheck, GraduationCap
+    AlertCircle, Loader, Filter, ShieldCheck, GraduationCap,
+    Eye, EyeOff, Key, Lock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -17,6 +18,9 @@ const DataGuru = () => {
     const [editingGuru, setEditingGuru] = useState(null);
     const [deletingGuru, setDeletingGuru] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [showChangePassword, setShowChangePassword] = useState(false);
+    const [showPasswordText, setShowPasswordText] = useState(false);
+    const [showCurrentPasswordText, setShowCurrentPasswordText] = useState(false);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -53,6 +57,9 @@ const DataGuru = () => {
 
     const openAddModal = () => {
         setEditingGuru(null);
+        setShowChangePassword(false);
+        setShowPasswordText(false);
+        setShowCurrentPasswordText(false);
         setFormData({
             full_name: '',
             email: '',
@@ -66,6 +73,9 @@ const DataGuru = () => {
 
     const openEditModal = (guru) => {
         setEditingGuru(guru);
+        setShowChangePassword(false);
+        setShowPasswordText(false);
+        setShowCurrentPasswordText(false);
         setFormData({
             full_name: guru.full_name || '',
             email: guru.email || '',
@@ -88,8 +98,11 @@ const DataGuru = () => {
 
         try {
             if (editingGuru) {
-                const { password, ...updateData } = formData;
-                await userAPI.update(editingGuru.id, updateData);
+                const updatePayload = { ...formData };
+                if (!showChangePassword || !updatePayload.password) {
+                    delete updatePayload.password;
+                }
+                await userAPI.update(editingGuru.id, updatePayload);
                 toast.success('Data guru berhasil diperbarui');
             } else {
                 if (!formData.password) {
@@ -412,21 +425,110 @@ const DataGuru = () => {
                                     />
                                 </div>
 
-                                <div>
-                                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-                                        {editingGuru ? 'Password Baru (opsional)' : 'Password'}
-                                        {!editingGuru && <span className="text-rose-500"> *</span>}
-                                    </label>
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleInputChange}
-                                        placeholder="••••••••"
-                                        className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 transition-all"
-                                        required={!editingGuru}
-                                    />
-                                </div>
+                                {editingGuru ? (
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                                            Kata Sandi
+                                        </label>
+                                        {!showChangePassword ? (
+                                            <div className="flex items-center justify-between p-3.5 bg-slate-900 border border-slate-800 rounded-xl">
+                                                <div className="flex items-center gap-2.5 flex-1 min-w-0 mr-2">
+                                                    <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                                                        <Key className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-xs font-medium text-slate-400">Sandi Saat Ini</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-sm font-mono text-slate-200 truncate">
+                                                                {showCurrentPasswordText
+                                                                    ? (editingGuru.password_hash
+                                                                        ? (editingGuru.password_hash.startsWith('$2')
+                                                                            ? 'Terenkripsi (Bcrypt)'
+                                                                            : editingGuru.password_hash)
+                                                                        : 'Tidak tersedia')
+                                                                    : '••••••••'}
+                                                            </p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowCurrentPasswordText(!showCurrentPasswordText)}
+                                                                className="text-slate-400 hover:text-white transition-colors p-1 cursor-pointer"
+                                                                title={showCurrentPasswordText ? "Sembunyikan Sandi" : "Lihat Sandi"}
+                                                            >
+                                                                {showCurrentPasswordText ? <EyeOff className="w-3.5 h-3.5 text-blue-400" /> : <Eye className="w-3.5 h-3.5" />}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowChangePassword(true)}
+                                                    className="text-xs text-blue-400 hover:text-blue-300 font-semibold px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                                                >
+                                                    <Lock className="w-3.5 h-3.5" />
+                                                    Ganti Sandi
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs text-blue-400 font-medium">Masukkan Password Baru</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setShowChangePassword(false);
+                                                            setFormData(prev => ({ ...prev, password: '' }));
+                                                        }}
+                                                        className="text-xs text-rose-400 hover:text-rose-300 font-medium cursor-pointer"
+                                                    >
+                                                        Batal Ganti Sandi
+                                                    </button>
+                                                </div>
+                                                <div className="relative">
+                                                    <input
+                                                        type={showPasswordText ? "text" : "password"}
+                                                        name="password"
+                                                        value={formData.password}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Ketik password baru..."
+                                                        className="w-full pl-4 pr-10 py-3 bg-slate-900 border border-blue-500/50 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 transition-all"
+                                                        required
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPasswordText(!showPasswordText)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer p-1"
+                                                    >
+                                                        {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                                            Password <span className="text-rose-500">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPasswordText ? "text" : "password"}
+                                                name="password"
+                                                value={formData.password}
+                                                onChange={handleInputChange}
+                                                placeholder="••••••••"
+                                                className="w-full pl-4 pr-10 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 transition-all"
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPasswordText(!showPasswordText)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer p-1"
+                                            >
+                                                {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">

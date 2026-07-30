@@ -30,7 +30,7 @@ const TeacherSidebar = () => {
                     </div>
                     <div>
                         <h1 className="font-bold text-sm">ABSENSI GURU</h1>
-                        <p className="text-xs text-slate-400">SMA NEGERI 1</p>
+                        <p className="text-xs text-slate-400">SMA AL-HIDAYAH PUSPAHIANG</p>
                     </div>
                 </div>
             </div>
