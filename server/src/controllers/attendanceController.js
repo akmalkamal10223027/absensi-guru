@@ -1,6 +1,15 @@
 import { supabase, supabaseStorage } from '../config/supabase.js';
 import { format } from 'date-fns';
 
+// Helper untuk mendapatkan informasi tanggal & waktu dalam zona WIB (Asia/Jakarta)
+const getWibInfo = () => {
+    const nowWib = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    const today = format(nowWib, 'yyyy-MM-dd');
+    const dayOfWeek = nowWib.getDay(); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
+    const currentMinutes = nowWib.getHours() * 60 + nowWib.getMinutes();
+    return { nowWib, today, dayOfWeek, currentMinutes };
+};
+
 // Haversine formula untuk hitung jarak
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371e3;
@@ -20,7 +29,7 @@ export const checkIn = async (req, res) => {
     try {
         const { latitude, longitude, notes } = req.body;
         const userId = req.user.id;
-        const today = format(new Date(), 'yyyy-MM-dd');
+        const { today, dayOfWeek, currentMinutes } = getWibInfo();
 
         // Cek apakah sudah check-in hari ini
         const { data: existing } = await supabase
@@ -28,7 +37,7 @@ export const checkIn = async (req, res) => {
             .select('id')
             .eq('user_id', userId)
             .eq('date', today)
-            .single();
+            .maybeSingle();
 
         if (existing) {
             return res.status(400).json({ error: 'Anda sudah melakukan absen masuk hari ini' });
@@ -72,29 +81,23 @@ export const checkIn = async (req, res) => {
             photoUrl = urlData.publicUrl;
         }
 
-        // Cek jadwal kerja untuk tentukan status
-        const dayOfWeek = new Date().getDay();
+        // Cek jadwal kerja untuk tentukan status keterlambatan
         const { data: schedule } = await supabase
             .from('work_schedules')
             .select('*')
             .eq('day_of_week', dayOfWeek)
             .eq('is_active', true)
-            .single();
+            .maybeSingle();
+
+        const startTimeStr = schedule?.start_time || '07:00:00';
+        const lateThresholdMinutes = schedule?.late_threshold_minutes ?? 15;
+
+        const [startHour, startMinute] = startTimeStr.split(':');
+        const lateThreshold = (parseInt(startHour) * 60) + parseInt(startMinute) + parseInt(lateThresholdMinutes);
 
         let status = 'hadir';
-        if (schedule) {
-            const now = new Date();
-            const [startHour, startMinute] = schedule.start_time.split(':');
-            const lateTime = new Date(now);
-            lateTime.setHours(
-                parseInt(startHour),
-                parseInt(startMinute) + (schedule.late_threshold_minutes || 15),
-                0
-            );
-
-            if (now > lateTime) {
-                status = 'terlambat';
-            }
+        if (currentMinutes > lateThreshold) {
+            status = 'terlambat';
         }
 
         // Simpan data absensi
@@ -132,7 +135,7 @@ export const checkOut = async (req, res) => {
     try {
         const { latitude, longitude } = req.body;
         const userId = req.user.id;
-        const today = format(new Date(), 'yyyy-MM-dd');
+        const { today } = getWibInfo();
 
         const { data: attendance, error: findError } = await supabase
             .from('attendance')
@@ -191,7 +194,7 @@ export const checkOut = async (req, res) => {
 export const getTodayAttendance = async (req, res) => {
     try {
         const userId = req.user.id;
-        const today = format(new Date(), 'yyyy-MM-dd');
+        const { today } = getWibInfo();
 
         const { data: attendance, error } = await supabase
             .from('attendance')
@@ -263,7 +266,7 @@ export const getAllAttendance = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
     try {
-        const today = format(new Date(), 'yyyy-MM-dd');
+        const { today } = getWibInfo();
 
         const { count: totalUsers } = await supabase
             .from('users')
