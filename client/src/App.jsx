@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -22,7 +22,7 @@ import Profil from './pages/teacher/Profil';
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <HashRouter>
         <Toaster
           position="top-right"
           toastOptions={{
@@ -101,10 +101,26 @@ function App() {
             }
           />
           <Route
+            path="/teacher/check-in"
+            element={
+              <ProtectedRoute allowedRoles={['guru']}>
+                <CheckIn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/teacher/absen-masuk"
             element={
               <ProtectedRoute allowedRoles={['guru']}>
                 <CheckIn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/check-out"
+            element={
+              <ProtectedRoute allowedRoles={['guru']}>
+                <CheckOut />
               </ProtectedRoute>
             }
           />
@@ -137,7 +153,7 @@ function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </AuthProvider>
   );
 }
