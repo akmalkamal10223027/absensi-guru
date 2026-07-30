@@ -62,7 +62,7 @@ const AdminDashboard = () => {
         return (
             <div className="flex min-h-screen bg-slate-900 text-white">
                 <AdminSidebar />
-                <div className="flex-1 ml-64 flex items-center justify-center">
+                <div className="flex-1 lg:ml-64 flex items-center justify-center min-h-screen">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                 </div>
             </div>
@@ -70,9 +70,9 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-900 font-sans text-slate-100">
+        <div className="flex min-h-screen bg-slate-900 font-sans text-slate-100 overflow-x-hidden">
             <AdminSidebar />
-            <main className="flex-1 ml-64 p-8">
+            <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 w-full max-w-full overflow-x-hidden">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <div>

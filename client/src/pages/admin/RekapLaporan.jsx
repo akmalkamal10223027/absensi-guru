@@ -260,7 +260,7 @@ const RekapLaporan = () => {
         return (
             <div className="flex min-h-screen bg-slate-900 text-white print:bg-white print:text-black">
                 <AdminSidebar />
-                <div className="flex-1 ml-64 flex items-center justify-center print:ml-0">
+                <div className="flex-1 lg:ml-64 flex items-center justify-center min-h-screen print:ml-0">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                 </div>
             </div>
@@ -268,9 +268,9 @@ const RekapLaporan = () => {
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-900 font-sans text-slate-100 print:bg-white print:text-black">
+        <div className="flex min-h-screen bg-slate-900 font-sans text-slate-100 print:bg-white print:text-black overflow-x-hidden">
             <AdminSidebar />
-            <main className="flex-1 ml-64 p-8 print:ml-0 print:p-0 print:w-full">
+            <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 w-full max-w-full overflow-x-hidden print:ml-0 print:p-0 print:w-full">
                 {/* Printable School Header (Only visible on window.print()) */}
                 <div className="hidden print:block mb-4 text-center">
                     <img src={kopImg} alt="Kop Surat SMA Al-Hidayah Puspahiang" className="w-full h-auto mb-3" />
