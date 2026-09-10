@@ -3,7 +3,8 @@ import AdminSidebar from '../../components/AdminSidebar';
 import { attendanceAPI } from '../../utils/api';
 import {
     Calendar, Filter, Search, Eye, MapPin, Clock,
-    CheckCircle, XCircle, AlertCircle, Download, Loader, User
+    CheckCircle, XCircle, AlertCircle, Download, Loader, User,
+    FileText, HeartPulse, ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
@@ -82,6 +83,7 @@ const Absensi = () => {
     // Statistics
     const totalHadir = attendanceList.filter(a => a.status === 'hadir').length;
     const totalTerlambat = attendanceList.filter(a => a.status === 'terlambat').length;
+    const totalIzinSakit = attendanceList.filter(a => a.status === 'izin' || a.status === 'sakit').length;
     const totalTidakHadir = attendanceList.filter(a => a.status === 'tidak_hadir').length;
 
     if (loading) {
@@ -372,14 +374,41 @@ const Absensi = () => {
                                     )}
                                 </div>
 
+                                {/* Notes / Alasan if available */}
+                                {selectedAttendance.notes && (
+                                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                                        <div className="flex items-center gap-2 mb-2 text-slate-400">
+                                            <FileText className="w-4 h-4 text-blue-400" />
+                                            <span className="font-semibold uppercase tracking-wider text-[11px]">Keterangan / Alasan</span>
+                                        </div>
+                                        <p className="text-white text-xs leading-relaxed">{selectedAttendance.notes}</p>
+                                    </div>
+                                )}
+
                                 {/* Photo */}
                                 {selectedAttendance.check_in_photo_url && (
                                     <div>
-                                        <p className="font-semibold text-slate-300 mb-2">Foto Swafoto Check-in</p>
-                                        <div className="rounded-2xl overflow-hidden border border-slate-800 max-h-64">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="font-semibold text-slate-300">
+                                                {selectedAttendance.status === 'izin'
+                                                    ? 'Surat Izin / Dokumen Pendukung'
+                                                    : selectedAttendance.status === 'sakit'
+                                                        ? 'Surat Dokter / Bukti Sakit'
+                                                        : 'Foto Swafoto Check-in'}
+                                            </p>
+                                            <a
+                                                href={selectedAttendance.check_in_photo_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-xs text-blue-400 hover:underline flex items-center gap-1 font-medium"
+                                            >
+                                                <ExternalLink className="w-3.5 h-3.5" /> Lihat Ukuran Penuh
+                                            </a>
+                                        </div>
+                                        <div className="rounded-2xl overflow-hidden border border-slate-800 max-h-64 bg-slate-900">
                                             <img
                                                 src={selectedAttendance.check_in_photo_url}
-                                                alt="Check-in Photo"
+                                                alt="Attendance Attachment"
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>

@@ -194,6 +194,86 @@ export const checkOut = async (req, res) => {
     }
 };
 
+export const submitPermit = async (req, res) => {
+    try {
+        const { status, notes } = req.body;
+        const userId = req.user.id;
+        const { today } = getWibInfo();
+
+        if (!status || !['izin', 'sakit'].includes(status.toLowerCase())) {
+            return res.status(400).json({ error: 'Status pengajuan harus berupa "izin" atau "sakit"' });
+        }
+
+        if (!notes || !notes.trim()) {
+            return res.status(400).json({ error: 'Alasan atau keterangan pengajuan wajib diisi' });
+        }
+
+        // Cek apakah sudah ada presensi atau pengajuan izin hari ini
+        const { data: existing } = await supabase
+            .from('attendance')
+            .select('id, status')
+            .eq('user_id', userId)
+            .eq('date', today)
+            .maybeSingle();
+
+        if (existing) {
+            const statusLabel = existing.status === 'izin' ? 'izin' : existing.status === 'sakit' ? 'sakit' : 'presensi';
+            return res.status(400).json({
+                error: `Anda sudah tercatat melakukan ${existing.status === 'izin' || existing.status === 'sakit' ? 'pengajuan ' + statusLabel : 'presensi'} hari ini`
+            });
+        }
+
+        // Upload foto bukti/surat keterangan jika ada
+        let photoUrl = null;
+        if (req.file) {
+            const ext = req.file.mimetype?.split('/')[1] || 'jpg';
+            const fileName = `${userId}/${today}_permit_${Date.now()}.${ext}`;
+            const { error: uploadError } = await supabaseStorage.upload(fileName, req.file.buffer, {
+                contentType: req.file.mimetype || 'image/jpeg',
+                upsert: false
+            });
+
+            if (uploadError) {
+                console.error('Permit photo upload error:', uploadError);
+                throw uploadError;
+            }
+
+            const { data: urlData } = supabaseStorage.getPublicUrl(fileName);
+            photoUrl = urlData.publicUrl;
+        }
+
+        const normalizedStatus = status.toLowerCase();
+
+        // Simpan data absensi dengan status izin atau sakit
+        const { data: attendance, error } = await supabase
+            .from('attendance')
+            .insert([{
+                user_id: userId,
+                date: today,
+                check_in_time: new Date().toISOString(),
+                check_in_photo_url: photoUrl,
+                check_in_latitude: null,
+                check_in_longitude: null,
+                status: normalizedStatus,
+                distance_meters: null,
+                notes: notes.trim()
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.json({
+            message: `Pengajuan ${normalizedStatus === 'izin' ? 'Izin' : 'Sakit'} berhasil disimpan`,
+            attendance,
+            status: normalizedStatus
+        });
+    } catch (error) {
+        console.error('submitPermit error:', error);
+        res.status(500).json({ error: 'Terjadi kesalahan saat memproses pengajuan izin/sakit' });
+    }
+};
+
 export const getTodayAttendance = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -208,13 +288,15 @@ export const getTodayAttendance = async (req, res) => {
 
         if (error) throw error;
 
+        const isPermit = attendance ? (attendance.status === 'izin' || attendance.status === 'sakit') : false;
         const hasCheckedIn = !!attendance;
         const hasCheckedOut = !!(attendance && attendance.check_out_time);
 
         res.json({
             attendance: attendance || null,
             hasCheckedIn,
-            hasCheckedOut
+            hasCheckedOut,
+            isPermit
         });
     } catch (error) {
         console.error('getTodayAttendance error:', error);
@@ -282,21 +364,29 @@ export const getDashboardStats = async (req, res) => {
 
         const hadir = todayAttendance?.filter(a => a.status === 'hadir').length || 0;
         const terlambat = todayAttendance?.filter(a => a.status === 'terlambat').length || 0;
+        const izin = todayAttendance?.filter(a => a.status === 'izin').length || 0;
+        const sakit = todayAttendance?.filter(a => a.status === 'sakit').length || 0;
         const totalAbsen = (todayAttendance?.length) || 0;
         const totalGuru = totalUsers || 0;
         const tidakHadir = totalGuru - totalAbsen > 0 ? totalGuru - totalAbsen : 0;
 
         const hadirPercentage = totalGuru > 0 ? Math.round((hadir / totalGuru) * 100) : 0;
         const terlambatPercentage = totalGuru > 0 ? Math.round((terlambat / totalGuru) * 100) : 0;
+        const izinPercentage = totalGuru > 0 ? Math.round((izin / totalGuru) * 100) : 0;
+        const sakitPercentage = totalGuru > 0 ? Math.round((sakit / totalGuru) * 100) : 0;
         const tidakHadirPercentage = totalGuru > 0 ? Math.round((tidakHadir / totalGuru) * 100) : 0;
 
         const stats = {
             totalGuru,
             hadir,
             terlambat,
+            izin,
+            sakit,
             tidakHadir,
             hadirPercentage,
             terlambatPercentage,
+            izinPercentage,
+            sakitPercentage,
             tidakHadirPercentage
         };
 
@@ -306,6 +396,8 @@ export const getDashboardStats = async (req, res) => {
             todayStats: {
                 hadir,
                 terlambat,
+                izin,
+                sakit,
                 belumAbsen: tidakHadir,
                 totalAbsen
             }

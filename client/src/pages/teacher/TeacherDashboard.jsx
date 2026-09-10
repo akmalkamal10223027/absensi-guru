@@ -4,7 +4,8 @@ import { attendanceAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import {
     CheckCircle, Clock, Calendar, MapPin, Camera,
-    TrendingUp, AlertCircle, XCircle, ChevronRight, UserCheck
+    TrendingUp, AlertCircle, XCircle, ChevronRight, UserCheck,
+    FileText, HeartPulse, FileCheck2, ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
@@ -49,10 +50,14 @@ const TeacherDashboard = () => {
         const colors = {
             hadir: 'bg-emerald-500 text-white',
             terlambat: 'bg-amber-500 text-white',
+            izin: 'bg-blue-600 text-white',
+            sakit: 'bg-purple-600 text-white',
             tidak_hadir: 'bg-rose-500 text-white'
         };
         return colors[status] || 'bg-slate-500 text-white';
     };
+
+    const isPermit = todayAttendance?.status === 'izin' || todayAttendance?.status === 'sakit';
 
     if (loading) {
         return (
@@ -96,20 +101,36 @@ const TeacherDashboard = () => {
                     {/* Status Badge inside Card */}
                     <div className="relative z-10 bg-slate-800/80 backdrop-blur rounded-xl p-3.5 border border-slate-700/60 flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md ${
-                            hasCheckedIn ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-300'
+                            isPermit
+                                ? (todayAttendance.status === 'izin' ? 'bg-blue-500 text-white' : 'bg-purple-500 text-white')
+                                : hasCheckedIn
+                                    ? 'bg-emerald-500 text-white'
+                                    : 'bg-slate-700 text-slate-300'
                         }`}>
-                            {hasCheckedIn ? <CheckCircle className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+                            {isPermit ? (
+                                todayAttendance.status === 'izin' ? <FileText className="w-5 h-5" /> : <HeartPulse className="w-5 h-5" />
+                            ) : hasCheckedIn ? (
+                                <CheckCircle className="w-6 h-6" />
+                            ) : (
+                                <Clock className="w-6 h-6" />
+                            )}
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                                 <p className="font-semibold text-sm text-white">
-                                    {hasCheckedIn ? 'Sudah Presensi Masuk' : 'Belum Presensi'}
+                                    {isPermit
+                                        ? `Sedang ${todayAttendance.status === 'izin' ? 'Izin' : 'Sakit'}`
+                                        : hasCheckedIn
+                                            ? 'Sudah Presensi Masuk'
+                                            : 'Belum Presensi'}
                                 </p>
                             </div>
                             <p className="text-xs text-slate-300 mt-0.5 truncate">
-                                {hasCheckedIn
-                                    ? `Jam: ${format(new Date(todayAttendance.check_in_time), 'HH:mm:ss')} WIB`
-                                    : 'Silakan absen masuk menggunakan kamera & GPS'}
+                                {isPermit
+                                    ? (todayAttendance.notes ? `Alasan: ${todayAttendance.notes}` : 'Pengajuan telah dicatat')
+                                    : hasCheckedIn
+                                        ? `Jam: ${format(new Date(todayAttendance.check_in_time), 'HH:mm:ss')} WIB`
+                                        : 'Silakan absen masuk atau ajukan izin jika berhalangan'}
                             </p>
                         </div>
                     </div>
@@ -132,30 +153,93 @@ const TeacherDashboard = () => {
                             <Camera className="w-6 h-6" />
                         </div>
                         <p className="font-bold text-gray-900 text-sm">Absen Masuk</p>
-                        <p className="text-xs text-gray-500 mt-1 font-medium">
-                            {hasCheckedIn ? '✓ Sudah Absen' : 'Ambil Swafoto & GPS'}
+                        <p className="text-xs text-gray-500 mt-1 font-medium truncate">
+                            {isPermit
+                                ? (todayAttendance.status === 'izin' ? '✓ Sedang Izin' : '✓ Sedang Sakit')
+                                : hasCheckedIn
+                                    ? '✓ Sudah Absen'
+                                    : 'Ambil Swafoto & GPS'}
                         </p>
                     </button>
 
                     <button
                         onClick={() => navigate('/teacher/absen-pulang')}
-                        disabled={!hasCheckedIn || hasCheckedOut}
+                        disabled={!hasCheckedIn || hasCheckedOut || isPermit}
                         className={`relative group rounded-2xl p-4 text-left transition-all duration-200 border-2 ${
-                            !hasCheckedIn || hasCheckedOut
+                            !hasCheckedIn || hasCheckedOut || isPermit
                                 ? 'bg-slate-50 border-slate-200 opacity-65 cursor-not-allowed'
                                 : 'bg-white border-emerald-500/30 hover:border-emerald-500 shadow-sm hover:shadow-md active:scale-98'
                         }`}
                     >
                         <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${
-                            hasCheckedOut ? 'bg-slate-200 text-slate-500' : 'bg-emerald-50 text-emerald-600'
+                            hasCheckedOut || isPermit ? 'bg-slate-200 text-slate-500' : 'bg-emerald-50 text-emerald-600'
                         }`}>
                             <UserCheck className="w-6 h-6" />
                         </div>
                         <p className="font-bold text-gray-900 text-sm">Absen Pulang</p>
-                        <p className="text-xs text-gray-500 mt-1 font-medium">
-                            {hasCheckedOut ? '✓ Sudah Pulang' : !hasCheckedIn ? 'Absen Masuk Dulu' : 'Presensi Pulang'}
+                        <p className="text-xs text-gray-500 mt-1 font-medium truncate">
+                            {isPermit
+                                ? 'Tidak Perlu'
+                                : hasCheckedOut
+                                    ? '✓ Sudah Pulang'
+                                    : !hasCheckedIn
+                                        ? 'Absen Masuk Dulu'
+                                        : 'Presensi Pulang'}
                         </p>
                     </button>
+                </div>
+
+                {/* Izin / Sakit Action Card */}
+                <div className={`rounded-2xl p-4 transition-all duration-200 border ${
+                    isPermit
+                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
+                        : 'bg-white border-slate-200 shadow-sm hover:border-indigo-300'
+                }`}>
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                                isPermit
+                                    ? (todayAttendance.status === 'izin' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white')
+                                    : 'bg-indigo-50 text-indigo-600'
+                            }`}>
+                                {isPermit ? (
+                                    todayAttendance.status === 'izin' ? <FileText className="w-5 h-5" /> : <HeartPulse className="w-5 h-5" />
+                                ) : (
+                                    <FileCheck2 className="w-5 h-5" />
+                                )}
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-900 text-sm">
+                                    {isPermit
+                                        ? `Pengajuan ${todayAttendance.status === 'izin' ? 'Izin' : 'Sakit'} Aktif`
+                                        : 'Berhalangan Hadir?'}
+                                </h4>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                    {isPermit
+                                        ? 'Pengajuan Anda telah tercatat pada sistem'
+                                        : 'Kirim permohonan Izin atau Surat Keterangan Sakit'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {!isPermit && !hasCheckedIn && (
+                            <button
+                                onClick={() => navigate('/teacher/izin-sakit')}
+                                className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition active:scale-95 shrink-0 cursor-pointer"
+                            >
+                                Ajukan
+                            </button>
+                        )}
+                        {isPermit && (
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 ${
+                                todayAttendance.status === 'izin'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-purple-100 text-purple-700'
+                            }`}>
+                                {todayAttendance.status === 'izin' ? 'Izin' : 'Sakit'}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {/* Today's Presensi Summary Detail */}
@@ -164,43 +248,90 @@ const TeacherDashboard = () => {
                         <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                             <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
                                 <TrendingUp className="w-4 h-4 text-blue-600" />
-                                Details Presensi Hari Ini
+                                {isPermit ? 'Detail Pengajuan Hari Ini' : 'Details Presensi Hari Ini'}
                             </h3>
                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(todayAttendance.status)}`}>
                                 {todayAttendance.status === 'hadir' ? 'Hadir Tepat Waktu' :
-                                    todayAttendance.status === 'terlambat' ? 'Terlambat' : 'Tidak Hadir'}
+                                    todayAttendance.status === 'terlambat' ? 'Terlambat' :
+                                    todayAttendance.status === 'izin' ? 'Izin' :
+                                    todayAttendance.status === 'sakit' ? 'Sakit' : 'Tidak Hadir'}
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-100">
-                                <p className="text-gray-500 mb-1 flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5 text-blue-600" /> Jam Masuk
-                                </p>
-                                <p className="font-bold text-gray-900 text-sm">
-                                    {format(new Date(todayAttendance.check_in_time), 'HH:mm:ss')} WIB
-                                </p>
-                            </div>
+                        {isPermit ? (
+                            <div className="space-y-2.5 text-xs">
+                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
+                                    <p className="text-slate-400 font-medium flex items-center gap-1 text-[11px]">
+                                        <Clock className="w-3.5 h-3.5 text-indigo-600" /> Waktu Pengajuan
+                                    </p>
+                                    <p className="font-bold text-slate-800 text-sm">
+                                        {format(new Date(todayAttendance.check_in_time), 'HH:mm:ss')} WIB
+                                    </p>
+                                </div>
 
-                            <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-100">
-                                <p className="text-gray-500 mb-1 flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5 text-emerald-600" /> Jam Pulang
-                                </p>
-                                <p className="font-bold text-gray-900 text-sm">
-                                    {todayAttendance.check_out_time
-                                        ? `${format(new Date(todayAttendance.check_out_time), 'HH:mm:ss')} WIB`
-                                        : '-'}
-                                </p>
-                            </div>
-                        </div>
+                                {todayAttendance.notes && (
+                                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
+                                        <p className="text-slate-400 font-medium text-[11px]">Alasan / Keterangan</p>
+                                        <p className="font-medium text-slate-800 leading-relaxed">
+                                            {todayAttendance.notes}
+                                        </p>
+                                    </div>
+                                )}
 
-                        {todayAttendance.distance_meters !== undefined && (
-                            <div className="flex items-center justify-between text-xs text-gray-600 pt-1">
-                                <span className="flex items-center gap-1 text-gray-500">
-                                    <MapPin className="w-3.5 h-3.5 text-red-500" /> Jarak dari Sekolah
-                                </span>
-                                <span className="font-semibold text-gray-800">{todayAttendance.distance_meters} Meter</span>
+                                {todayAttendance.check_in_photo_url && (
+                                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
+                                        <p className="text-slate-400 font-medium text-[11px]">Lampiran Surat / Foto Bukti</p>
+                                        <a
+                                            href={todayAttendance.check_in_photo_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block rounded-lg overflow-hidden border border-slate-200 relative group max-h-40"
+                                        >
+                                            <img
+                                                src={todayAttendance.check_in_photo_url}
+                                                alt="Bukti Lampiran"
+                                                className="w-full h-32 object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-xs font-semibold gap-1">
+                                                <ExternalLink className="w-4 h-4" /> Buka Foto
+                                            </div>
+                                        </a>
+                                    </div>
+                                )}
                             </div>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                    <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+                                        <p className="text-gray-500 mb-1 flex items-center gap-1">
+                                            <Clock className="w-3.5 h-3.5 text-blue-600" /> Jam Masuk
+                                        </p>
+                                        <p className="font-bold text-gray-900 text-sm">
+                                            {format(new Date(todayAttendance.check_in_time), 'HH:mm:ss')} WIB
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+                                        <p className="text-gray-500 mb-1 flex items-center gap-1">
+                                            <Clock className="w-3.5 h-3.5 text-emerald-600" /> Jam Pulang
+                                        </p>
+                                        <p className="font-bold text-gray-900 text-sm">
+                                            {todayAttendance.check_out_time
+                                                ? `${format(new Date(todayAttendance.check_out_time), 'HH:mm:ss')} WIB`
+                                                : '-'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {todayAttendance.distance_meters !== undefined && todayAttendance.distance_meters !== null && (
+                                    <div className="flex items-center justify-between text-xs text-gray-600 pt-1">
+                                        <span className="flex items-center gap-1 text-gray-500">
+                                            <MapPin className="w-3.5 h-3.5 text-red-500" /> Jarak dari Sekolah
+                                        </span>
+                                        <span className="font-semibold text-gray-800">{todayAttendance.distance_meters} Meter</span>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 )}
@@ -224,29 +355,42 @@ const TeacherDashboard = () => {
                         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                                 todayAttendance.status === 'hadir' ? 'bg-emerald-100 text-emerald-600' :
-                                todayAttendance.status === 'terlambat' ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'
+                                todayAttendance.status === 'terlambat' ? 'bg-amber-100 text-amber-600' :
+                                todayAttendance.status === 'izin' ? 'bg-blue-100 text-blue-600' :
+                                todayAttendance.status === 'sakit' ? 'bg-purple-100 text-purple-600' :
+                                'bg-rose-100 text-rose-600'
                             }`}>
                                 {todayAttendance.status === 'hadir' ? <CheckCircle className="w-5 h-5" /> :
                                     todayAttendance.status === 'terlambat' ? <AlertCircle className="w-5 h-5" /> :
+                                    todayAttendance.status === 'izin' ? <FileText className="w-5 h-5" /> :
+                                    todayAttendance.status === 'sakit' ? <HeartPulse className="w-5 h-5" /> :
                                         <XCircle className="w-5 h-5" />}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900">Presensi Hari Ini</p>
-                                <p className="text-xs text-gray-500 mt-0.5">
-                                    {format(new Date(todayAttendance.check_in_time), 'HH:mm')} - {
-                                        todayAttendance.check_out_time
-                                            ? format(new Date(todayAttendance.check_out_time), 'HH:mm')
-                                            : 'Belum Pulang'
-                                    }
+                                <p className="text-sm font-semibold text-gray-900">
+                                    {isPermit ? `Pengajuan ${todayAttendance.status === 'izin' ? 'Izin' : 'Sakit'}` : 'Presensi Hari Ini'}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-0.5 truncate">
+                                    {isPermit
+                                        ? (todayAttendance.notes || 'Dicatat hari ini')
+                                        : `${format(new Date(todayAttendance.check_in_time), 'HH:mm')} - ${
+                                            todayAttendance.check_out_time
+                                                ? format(new Date(todayAttendance.check_out_time), 'HH:mm')
+                                                : 'Belum Pulang'
+                                        }`}
                                 </p>
                             </div>
                             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                                 todayAttendance.status === 'hadir' ? 'bg-emerald-100 text-emerald-700' :
                                 todayAttendance.status === 'terlambat' ? 'bg-amber-100 text-amber-700' :
+                                todayAttendance.status === 'izin' ? 'bg-blue-100 text-blue-700' :
+                                todayAttendance.status === 'sakit' ? 'bg-purple-100 text-purple-700' :
                                 'bg-rose-100 text-rose-700'
                             }`}>
                                 {todayAttendance.status === 'hadir' ? 'Hadir' :
-                                    todayAttendance.status === 'terlambat' ? 'Terlambat' : 'Alpha'}
+                                    todayAttendance.status === 'terlambat' ? 'Terlambat' :
+                                    todayAttendance.status === 'izin' ? 'Izin' :
+                                    todayAttendance.status === 'sakit' ? 'Sakit' : 'Alpha'}
                             </span>
                         </div>
                     ) : (

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-    checkIn, checkOut, getTodayAttendance, getAttendanceHistory,
+    checkIn, checkOut, submitPermit, getTodayAttendance, getAttendanceHistory,
     getAllAttendance, getDashboardStats, getRecentAttendance
 } from '../controllers/attendanceController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
@@ -11,6 +11,8 @@ const router = Router();
 // Teacher routes
 router.post('/check-in', authenticate, upload.single('photo'), checkIn);
 router.post('/check-out', authenticate, upload.single('photo'), checkOut);
+router.post('/permit', authenticate, upload.single('photo'), submitPermit);
+router.post('/izin-sakit', authenticate, upload.single('photo'), submitPermit);
 router.get('/today', authenticate, getTodayAttendance);
 router.get('/history', authenticate, getAttendanceHistory);
 

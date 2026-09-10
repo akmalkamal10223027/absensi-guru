@@ -18,6 +18,7 @@ import CheckIn from './pages/teacher/CheckIn';
 import CheckOut from './pages/teacher/CheckOut';
 import Riwayat from './pages/teacher/Riwayat';
 import Profil from './pages/teacher/Profil';
+import IzinSakit from './pages/teacher/IzinSakit';
 
 function App() {
   return (
@@ -137,6 +138,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['guru']}>
                 <Riwayat />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/izin-sakit"
+            element={
+              <ProtectedRoute allowedRoles={['guru']}>
+                <IzinSakit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/ijin-sakit"
+            element={
+              <ProtectedRoute allowedRoles={['guru']}>
+                <IzinSakit />
               </ProtectedRoute>
             }
           />

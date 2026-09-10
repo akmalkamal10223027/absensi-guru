@@ -4,7 +4,7 @@ import { attendanceAPI } from '../../utils/api';
 import {
     Calendar, Filter, CheckCircle, AlertCircle, XCircle,
     Clock, ChevronRight, Loader, ChevronLeft, MapPin,
-    FileText, Award, TrendingUp
+    FileText, Award, TrendingUp, HeartPulse, ExternalLink
 } from 'lucide-react';
 import { format, addMonths, subMonths, parseISO } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
@@ -28,25 +28,23 @@ const Riwayat = () => {
             const response = await attendanceAPI.getHistory();
             let data = response.data.data || [];
 
-            if (filterMonth) {
-                data = data.filter(a => a.date && a.date.startsWith(filterMonth));
-            }
-
+            // Filter by month
+            data = data.filter(item => item.date?.startsWith(filterMonth));
             setAttendanceList(data);
         } catch (error) {
-            console.error('Fetch history error:', error);
-            toast.error('Gagal memuat riwayat absensi');
+            console.error('Error fetching attendance history:', error);
+            toast.error('Gagal mengambil riwayat presensi');
         } finally {
             setLoading(false);
         }
     };
 
     const handlePrevMonth = () => {
-        setSelectedDate(prev => subMonths(prev, 1));
+        setSelectedDate(subMonths(selectedDate, 1));
     };
 
     const handleNextMonth = () => {
-        setSelectedDate(prev => addMonths(prev, 1));
+        setSelectedDate(addMonths(selectedDate, 1));
     };
 
     const filteredList = filterStatus === 'all'
@@ -89,14 +87,22 @@ const Riwayat = () => {
                     cardBorder: 'border-l-amber-500'
                 };
             case 'izin':
-            case 'sakit':
                 return {
-                    label: status === 'izin' ? 'Izin' : 'Sakit',
+                    label: 'Izin',
                     bg: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-                    badgeBg: 'bg-blue-500 text-white',
+                    badgeBg: 'bg-blue-600 text-white',
                     icon: FileText,
                     textColor: 'text-blue-600',
                     cardBorder: 'border-l-blue-500'
+                };
+            case 'sakit':
+                return {
+                    label: 'Sakit',
+                    bg: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+                    badgeBg: 'bg-purple-600 text-white',
+                    icon: HeartPulse,
+                    textColor: 'text-purple-600',
+                    cardBorder: 'border-l-purple-500'
                 };
             case 'tidak_hadir':
             case 'alpha':
@@ -270,38 +276,67 @@ const Riwayat = () => {
                                         </span>
                                     </div>
 
-                                    {/* Attendance Time Details */}
-                                    <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
-                                        <div className="bg-slate-50 rounded-xl p-2 flex items-center gap-2 border border-slate-100">
-                                            <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                                                <Clock className="w-3.5 h-3.5" />
+                                    {/* Attendance / Permit Details */}
+                                    {record.status === 'izin' || record.status === 'sakit' ? (
+                                        <div className="mt-3 pt-3 border-t border-slate-100 space-y-2 text-xs">
+                                            <div className="flex items-center justify-between text-slate-500">
+                                                <span className="flex items-center gap-1.5 font-medium text-[11px]">
+                                                    <Clock className="w-3.5 h-3.5 text-blue-600" />
+                                                    Waktu: {record.check_in_time ? format(parseISO(record.check_in_time), 'HH:mm') + ' WIB' : '-'}
+                                                </span>
+                                                {record.check_in_photo_url && (
+                                                    <a
+                                                        href={record.check_in_photo_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1 text-blue-600 font-bold hover:underline text-[11px]"
+                                                    >
+                                                        <ExternalLink className="w-3.5 h-3.5" /> Lihat Lampiran
+                                                    </a>
+                                                )}
                                             </div>
-                                            <div className="min-w-0">
-                                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Jam Masuk</p>
-                                                <p className="font-bold text-slate-800 font-mono text-xs">
-                                                    {record.check_in_time ? format(parseISO(record.check_in_time), 'HH:mm') : '-'}
-                                                </p>
-                                            </div>
+                                            {record.notes && (
+                                                <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 text-slate-700">
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Alasan / Keterangan</p>
+                                                    <p className="text-xs leading-relaxed">{record.notes}</p>
+                                                </div>
+                                            )}
                                         </div>
+                                    ) : (
+                                        <>
+                                            <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                                                <div className="bg-slate-50 rounded-xl p-2 flex items-center gap-2 border border-slate-100">
+                                                    <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                                                        <Clock className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Jam Masuk</p>
+                                                        <p className="font-bold text-slate-800 font-mono text-xs">
+                                                            {record.check_in_time ? format(parseISO(record.check_in_time), 'HH:mm') : '-'}
+                                                        </p>
+                                                    </div>
+                                                </div>
 
-                                        <div className="bg-slate-50 rounded-xl p-2 flex items-center gap-2 border border-slate-100">
-                                            <div className="w-6 h-6 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
-                                                <Clock className="w-3.5 h-3.5" />
+                                                <div className="bg-slate-50 rounded-xl p-2 flex items-center gap-2 border border-slate-100">
+                                                    <div className="w-6 h-6 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
+                                                        <Clock className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Jam Pulang</p>
+                                                        <p className="font-bold text-slate-800 font-mono text-xs">
+                                                            {record.check_out_time ? format(parseISO(record.check_out_time), 'HH:mm') : '-'}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="min-w-0">
-                                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Jam Pulang</p>
-                                                <p className="font-bold text-slate-800 font-mono text-xs">
-                                                    {record.check_out_time ? format(parseISO(record.check_out_time), 'HH:mm') : '-'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Location Footer */}
-                                    <div className="mt-2.5 flex items-center gap-1 text-[11px] text-slate-400 truncate">
-                                        <MapPin className="w-3 h-3 text-blue-500 shrink-0" />
-                                        <span className="truncate">SMA Al-Hidayah Puspahiang</span>
-                                    </div>
+                                            {/* Location Footer */}
+                                            <div className="mt-2.5 flex items-center gap-1 text-[11px] text-slate-400 truncate">
+                                                <MapPin className="w-3 h-3 text-blue-500 shrink-0" />
+                                                <span className="truncate">SMA Al-Hidayah Puspahiang</span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             );
                         })
