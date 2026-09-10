@@ -270,9 +270,9 @@ const RekapLaporan = () => {
     return (
         <div className="flex min-h-screen bg-slate-900 font-sans text-slate-100 print:bg-white print:text-black overflow-x-hidden">
             <AdminSidebar />
-            <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 w-full max-w-full overflow-x-hidden print:ml-0 print:p-0 print:w-full">
+            <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 w-full max-w-full overflow-x-hidden print:ml-0 print:w-full">
                 {/* Printable School Header (Only visible on window.print()) */}
-                <div className="hidden print:block mb-4 text-center">
+                <div className="hidden print:block pt-4 mb-5 text-center">
                     <img src={kopImg} alt="Kop Surat SMA Al-Hidayah Puspahiang" className="w-full h-auto mb-3" />
                     <h2 className="text-base font-bold text-black uppercase tracking-wider">LAPORAN REKAPITULASI KEHADIRAN GURU</h2>
                     <p className="text-xs text-gray-700 mt-1">

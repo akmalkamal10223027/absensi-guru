@@ -22,6 +22,10 @@
 
 /* Print styles for paper printing */
 @media print {
+  @page {
+    margin: 12mm 12mm 15mm 12mm;
+  }
+
   body {
     background-color: #ffffff !important;
     color: #000000 !important;
@@ -36,7 +40,10 @@
 
   main {
     margin-left: 0 !important;
-    padding: 0 !important;
+    padding-top: 15px !important;
+    padding-bottom: 20px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     width: 100% !important;
   }
 

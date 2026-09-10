@@ -31,7 +31,7 @@ const AdminSidebar = () => {
     return (
         <>
             {/* Mobile Top Header Navbar */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 flex items-center justify-between z-40">
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 flex items-center justify-between z-40 print:hidden">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setIsOpen(!isOpen)}
@@ -58,12 +58,12 @@ const AdminSidebar = () => {
             {isOpen && (
                 <div
                     onClick={() => setIsOpen(false)}
-                    className="lg:hidden fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-45 transition-opacity"
+                    className="lg:hidden fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-45 transition-opacity print:hidden"
                 />
             )}
 
             {/* Sidebar Drawer Container */}
-            <aside className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-slate-900 text-white flex flex-col border-r border-slate-800 transition-transform duration-300 ease-in-out ${
+            <aside className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-slate-900 text-white flex flex-col border-r border-slate-800 transition-transform duration-300 ease-in-out print:hidden ${
                 isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
             }`}>
                 {/* Header */}
