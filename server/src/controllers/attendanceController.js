@@ -329,14 +329,16 @@ export const getAttendanceHistory = async (req, res) => {
 
 export const getAllAttendance = async (req, res) => {
     try {
-        const { date, user_id, status } = req.query;
+        const { date, user_id, status, start_date, end_date } = req.query;
 
         let query = supabase
             .from('attendance')
             .select('*, users(full_name, email, nip)')
-            .order('created_at', { ascending: false });
+            .order('date', { ascending: false });
 
         if (date) query = query.eq('date', date);
+        if (start_date) query = query.gte('date', start_date);
+        if (end_date) query = query.lte('date', end_date);
         if (user_id) query = query.eq('user_id', user_id);
         if (status) query = query.eq('status', status);
 
@@ -345,6 +347,7 @@ export const getAllAttendance = async (req, res) => {
 
         res.json({ data, total: data?.length || 0 });
     } catch (error) {
+        console.error('getAllAttendance error:', error);
         res.status(500).json({ error: 'Terjadi kesalahan saat mengambil data absensi' });
     }
 };

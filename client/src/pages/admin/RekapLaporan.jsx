@@ -25,26 +25,107 @@ const RekapLaporan = () => {
     const [guruList, setGuruList] = useState([]);
     const [chartData, setChartData] = useState([]);
 
-    // Filter state
-    const [startDate, setStartDate] = useState(
-        format(new Date(new Date().setDate(1)), 'yyyy-MM-dd') // 1st of current month
-    );
-    const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    // Helper untuk rentang tanggal default (awal bulan berjalan s/d hari ini)
+    const getInitialDates = () => {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        return {
+            start: format(firstDay, 'yyyy-MM-dd'),
+            end: format(now, 'yyyy-MM-dd')
+        };
+    };
+
+    const initialDates = getInitialDates();
+    const [startDate, setStartDate] = useState(initialDates.start);
+    const [endDate, setEndDate] = useState(initialDates.end);
     const [selectedGuru, setSelectedGuru] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+
+    const handleStartDateChange = (val) => {
+        setStartDate(val);
+        if (endDate && val && val > endDate) {
+            setEndDate(val);
+        }
+    };
+
+    const handleEndDateChange = (val) => {
+        setEndDate(val);
+        if (startDate && val && val < startDate) {
+            setStartDate(val);
+        }
+    };
+
+    const setQuickFilter = (type) => {
+        const now = new Date();
+        const todayStr = format(now, 'yyyy-MM-dd');
+
+        if (type === 'today') {
+            setStartDate(todayStr);
+            setEndDate(todayStr);
+        } else if (type === 'thisWeek') {
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(now.getFullYear(), now.getMonth(), diff);
+            setStartDate(format(monday, 'yyyy-MM-dd'));
+            setEndDate(todayStr);
+        } else if (type === 'thisMonth') {
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            setStartDate(format(firstDay, 'yyyy-MM-dd'));
+            setEndDate(todayStr);
+        } else if (type === 'lastMonth') {
+            const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            setStartDate(format(firstDayLastMonth, 'yyyy-MM-dd'));
+            setEndDate(format(lastDayLastMonth, 'yyyy-MM-dd'));
+        }
+    };
+
+    const isQuickActive = (type) => {
+        const now = new Date();
+        const todayStr = format(now, 'yyyy-MM-dd');
+        if (type === 'today') {
+            return startDate === todayStr && endDate === todayStr;
+        }
+        if (type === 'thisMonth') {
+            const firstDay = format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd');
+            return startDate === firstDay && endDate === todayStr;
+        }
+        return false;
+    };
+
+    const formatPeriodDate = (dateStr) => {
+        try {
+            if (!dateStr) return '-';
+            return format(parseISO(dateStr), 'd MMMM yyyy', { locale: localeId });
+        } catch {
+            return dateStr || '-';
+        }
+    };
+
+    const getPeriodDisplay = () => {
+        if (!startDate && !endDate) return 'Semua Periode';
+        if (startDate === endDate) return `Tanggal: ${formatPeriodDate(startDate)}`;
+        return `Periode: ${formatPeriodDate(startDate)} — ${formatPeriodDate(endDate)}`;
+    };
 
     useEffect(() => {
         fetchData();
     }, [startDate, endDate, selectedGuru]);
 
     const fetchData = async () => {
+        if (!startDate || !endDate) return;
         setLoading(true);
         try {
-            // Fetch attendance data
-            const attendanceRes = await attendanceAPI.getAll({
+            // Fetch attendance data dengan parameter filter start_date & end_date
+            const params = {
                 start_date: startDate,
                 end_date: endDate
-            });
+            };
+            if (selectedGuru !== 'all') {
+                params.user_id = selectedGuru;
+            }
+
+            const attendanceRes = await attendanceAPI.getAll(params);
 
             // Fetch guru list untuk filter
             const guruRes = await userAPI.getAll();
@@ -74,6 +155,10 @@ const RekapLaporan = () => {
 
             attendanceData.forEach(record => {
                 const userId = record.user_id;
+                // Sinkronisasi: pastikan record berada dalam rentang startDate dan endDate
+                if (record.date && startDate && record.date < startDate) return;
+                if (record.date && endDate && record.date > endDate) return;
+
                 if (grouped[userId]) {
                     grouped[userId].total++;
                     const st = record.status?.toLowerCase();
@@ -184,7 +269,7 @@ const RekapLaporan = () => {
 
             doc.setFontSize(9);
             doc.setFont('helvetica', 'normal');
-            const periodStr = `Periode: ${format(parseISO(startDate), 'd MMMM yyyy', { locale: localeId })} - ${format(parseISO(endDate), 'd MMMM yyyy', { locale: localeId })}`;
+            const periodStr = getPeriodDisplay();
             doc.text(periodStr, 148.5, 50, { align: 'center' });
 
             doc.setLineWidth(0.4);
@@ -276,7 +361,7 @@ const RekapLaporan = () => {
                     <img src={kopImg} alt="Kop Surat SMA Al-Hidayah Puspahiang" className="w-full h-auto mb-3" />
                     <h2 className="text-base font-bold text-black uppercase tracking-wider">LAPORAN REKAPITULASI KEHADIRAN GURU</h2>
                     <p className="text-xs text-gray-700 mt-1">
-                        Periode: {format(parseISO(startDate), 'd MMMM yyyy', { locale: localeId })} — {format(parseISO(endDate), 'd MMMM yyyy', { locale: localeId })}
+                        {getPeriodDisplay()}
                     </p>
                 </div>
 
@@ -321,14 +406,14 @@ const RekapLaporan = () => {
                                 <input
                                     type="date"
                                     value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
+                                    onChange={(e) => handleStartDateChange(e.target.value)}
                                     className="bg-transparent text-white text-xs px-2 py-1 outline-none border-none cursor-pointer"
                                 />
                                 <span className="text-slate-500 text-xs font-semibold">s/d</span>
                                 <input
                                     type="date"
                                     value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
+                                    onChange={(e) => handleEndDateChange(e.target.value)}
                                     className="bg-transparent text-white text-xs px-2 py-1 outline-none border-none cursor-pointer"
                                 />
                             </div>
@@ -364,6 +449,47 @@ const RekapLaporan = () => {
                                 className="w-full bg-transparent border-none outline-none text-xs text-white placeholder-slate-500"
                             />
                         </div>
+                    </div>
+
+                    {/* Quick Preset Buttons */}
+                    <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-800/80">
+                        <span className="text-xs text-slate-400 font-medium mr-1">Filter Cepat:</span>
+                        <button
+                            type="button"
+                            onClick={() => setQuickFilter('today')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                                isQuickActive('today')
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-semibold'
+                                    : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800'
+                            }`}
+                        >
+                            Hari Ini
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setQuickFilter('thisWeek')}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800 transition-all cursor-pointer"
+                        >
+                            Minggu Ini
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setQuickFilter('thisMonth')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                                isQuickActive('thisMonth')
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-semibold'
+                                    : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800'
+                            }`}
+                        >
+                            Bulan Ini
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setQuickFilter('lastMonth')}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800 transition-all cursor-pointer"
+                        >
+                            Bulan Lalu
+                        </button>
                     </div>
                 </div>
 
@@ -458,7 +584,7 @@ const RekapLaporan = () => {
                         <div>
                             <h3 className="text-base font-bold text-white">Tabel Rekap Kehadiran</h3>
                             <p className="text-xs text-slate-400 mt-0.5">
-                                Periode: {format(parseISO(startDate), 'd MMMM yyyy', { locale: localeId })} — {format(parseISO(endDate), 'd MMMM yyyy', { locale: localeId })}
+                                {getPeriodDisplay()}
                             </p>
                         </div>
                     </div>
